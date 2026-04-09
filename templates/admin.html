@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Admin - Command Center</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+</head>
+<body>
+
+    <div id="sidebar" class="sidebar">
+        <div style="text-align: center; color: white; margin-bottom: 2rem;">
+            <h2>EXECUTIVE<br>COMMAND</h2>
+        </div>
+        
+        <button class="nav-btn active-tab" onclick="switchView('view-analytics')">
+            <span class="nav-btn-text"><h2>Analytics</h2></span>
+        </button>
+        <button class="nav-btn" onclick="switchView('view-users')">
+            <span class="nav-btn-text"><h2>Staff Roles</h2></span>
+        </button>
+        <button class="nav-btn" onclick="switchView('view-zones')">
+            <span class="nav-btn-text"><h2>Zone Rules</h2></span>
+        </button>
+        <button class="nav-btn" onclick="switchView('view-logs')">
+            <span class="nav-btn-text"><h2>Audit Log</h2></span>
+        </button>
+
+        <hr style="width: 80%; border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+        <button class="nav-btn logout-btn" onclick="window.location.href='/logout'">
+            <span class="nav-btn-text"><h2>Logout</h2></span>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        
+        <div id="view-analytics" class="view-section">
+            <h1 style="margin-top:0;">Hospital Utilization Analytics</h1>
+            <p style="color: var(--text-muted);">Real-time metrics on equipment deployment and efficiency.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Users</h3>
+                    <div class="value" id="stat-users">--</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #f59e0b;">
+                    <h3>Open Tech Tickets</h3>
+                    <div class="value" id="stat-tickets">--</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #ef4444;">
+                    <h3 style="color: #ef4444;">Critical Batteries</h3>
+                    <div class="value" id="stat-critical-bat">--</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #10b981;">
+                    <h3>Equipment Idle Rate</h3>
+                    <div class="value" id="stat-idle">--%</div>
+                </div>
+            </div>
+
+            <div class="chart-container" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem;">
+                <div class="chart-box">
+                    <h3 style="margin-top:0; margin-bottom: 1rem;">Asset Status Breakdown</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3 style="margin-top:0; margin-bottom: 1rem;">Inventory by Type</h3>
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="grid-template-columns: 1fr 1fr;">
+                <div class="chart-box">
+                    <h3 style="margin-top:0; margin-bottom: 1rem;">Physical Distribution</h3>
+                    <canvas id="floorChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3 style="margin-top:0; margin-bottom: 1rem;">Fleet Battery Health</h3>
+                    <canvas id="batteryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="view-users" class="view-section hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                <div>
+                    <h1 style="margin:0;">Personnel & Access Control</h1>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">Manage system access and assign tracking badges to staff.</p>
+                </div>
+                <button class="done-btn" onclick="openModal('modal-add-user')">+ Register Staff</button>
+            </div>
+
+            <div class="data-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Badge MAC</th>
+                            <th>Staff Name</th>
+                            <th>Role</th>
+                            <th>Last Known Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-zones" class="view-section hidden">
+            <h1 style="margin-top:0;">Par-Level Zone Rules</h1>
+            <p style="color: var(--text-muted);">Automated compliance rules for critical departments.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card" style="border-left-color: #ef4444;">
+                    <h3 style="color: #ef4444;">🚨 ER Wheelchair Par Level</h3>
+                    <p><strong>Current:</strong> 2 / Minimum: 5</p>
+                    <button class="secondary-btn small-btn" style="width: 100%;">Dispatch Transport</button>
+                </div>
+                <div class="stat-card" style="border-left-color: #10b981;">
+                    <h3>ICU Pump Par Level</h3>
+                    <p><strong>Current:</strong> 12 / Minimum: 10</p>
+                    <p style="color: #10b981; font-weight:bold; margin:0;">Status: Compliant</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-logs" class="view-section hidden">
+            <h1 style="margin-top:0;">System Audit Trail</h1>
+            <p style="color: var(--text-muted);">Immutable record of system changes and technical actions.</p>
+            
+            <div class="data-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Actor</th>
+                            <th>Action Taken</th>
+                            <th>Target Element</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Just now</td><td>Tech (tech@hospital.com)</td><td>Resolved Ticket</td><td>#a1b2c3d4</td>
+                        </tr>
+                        <tr>
+                            <td>2 hrs ago</td><td>Admin (admin@hospital.com)</td><td><span style="color:#ef4444;">Deleted Asset</span></td><td>00:11:22:33:44:55</td>
+                        </tr>
+                        <tr>
+                            <td>1 day ago</td><td>System Automation</td><td>Alert Triggered</td><td>ER Zone Minimum</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="modal-add-user" class="modal-overlay hidden">
+        <div class="modal-content" style="height: auto;">
+            <button class="close-x" onclick="closeModal('modal-add-user')">✖</button>
+            <h2>Register New Staff</h2>
+            <form onsubmit="saveUser(event)">
+                <div class="input-group">
+                    <label>Badge MAC Address</label>
+                    <input type="text" id="user-mac" required placeholder="AA:BB:CC:DD:EE:FF">
+                </div>
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="user-name" required placeholder="Dr. Jane Smith">
+                </div>
+                <div class="input-group">
+                    <label>System Role</label>
+                    <select id="user-role" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                        <option value="medical">Medical Staff (Map Only)</option>
+                        <option value="tech">Tech (Asset Manager)</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button type="submit" class="done-btn" style="width: 100%;">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+</body>
+</html>

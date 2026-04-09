@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Dashboard - Asset Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div id="sidebar" class="sidebar">
+        <div style="text-align: center; color: white; margin-bottom: 2rem;">
+            <h2>TECH ADMIN</h2>
+        </div>
+        
+        <button class="nav-btn" onclick="switchView('view-assets')" style="border-color: var(--accent);">
+            <span class="nav-btn-text" style="display: block;"><h2>Asset Map</h2></span>
+        </button>
+
+        <button class="nav-btn" onclick="switchView('view-tickets')">
+            <span class="nav-btn-text" style="display: block;"><h2>Tickets</h2></span>
+        </button>
+
+        <hr style="width: 80%; border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+
+        <button class="nav-btn" onclick="openModal('modal-asset-form', true)">
+            <span class="nav-btn-text" style="display: block;"><h2>+ Add Asset</h2></span>
+        </button>
+
+        <button class="nav-btn" onclick="openSidePanel('panel-battery')">
+            <span class="nav-btn-text" style="display: block;"><h2>Battery Log</h2></span>
+        </button>
+        
+        <button class="nav-btn logout-btn" onclick="window.location.href='/logout'">
+            <span class="nav-btn-text" style="display: block;"><h2>Logout </h2></span>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        
+        <div id="view-assets" class="view-section">
+            <div class="header-bar">
+                <div>
+                    <h1 style="margin: 0; color: var(--text-primary);">System Asset Directory</h1>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">Manage and monitor all hardware tags across the hospital network.</p>
+                </div>
+                <div class="search-input-wrapper" style="width: 300px;">
+                    <input type="text" id="directory-search" class="search-input" placeholder="Search by name or MAC..." oninput="filterTable()">
+                </div>
+            </div>
+
+            <div class="asset-table-wrapper">
+                <table id="asset-table">
+                    <thead>
+                        <tr>
+                            <th>MAC Address</th>
+                            <th>Asset Name</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Floor</th>
+                            <th>Battery</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-tickets" class="view-section hidden">
+            <div class="header-bar">
+                <div>
+                    <h1 style="margin: 0; color: var(--text-primary);">Active Support Tickets</h1>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">Issues reported by medical staff requiring technical review.</p>
+                </div>
+                <button class="secondary-btn" onclick="loadTickets()">⟳ Refresh</button>
+            </div>
+
+            <div class="asset-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Time Submitted</th>
+                            <th>Target Asset (MAC)</th>
+                            <th>Reported Issues</th>
+                            <th style="width: 35%;">Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+ <div id="modal-asset-form" class="modal-overlay hidden">
+        <div class="modal-content" style="height: auto;">
+            <button class="close-x" onclick="closeModal('modal-asset-form')">✖</button>
+            <h2 id="modal-title">Add New Asset</h2>
+            
+            <form id="asset-form" onsubmit="saveAsset(event)">
+                <div class="input-group">
+                    <label>MAC Address (Tag ID)</label>
+                    <input type="text" id="form-mac" required placeholder="00:11:22:33:44:55">
+                </div>
+                
+                <div class="input-group">
+                    <label>Asset Name</label>
+                    <input type="text" id="form-name" required placeholder="IV Pump 4B">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 20px;">
+                    <div class="input-group" style="flex: 1; margin: 0;">
+                        <label>Asset Type</label>
+                        <select id="form-type" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                            <option value="iv pump">IV Pump</option>
+                            <option value="wheelchair">Wheelchair</option>
+                            <option value="bed">Bed</option>
+                            <option value="monitor">Monitor</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1; margin: 0;">
+                        <label>Status</label>
+                        <select id="form-status" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                            <option value="active">Active</option>
+                            <option value="used">Used</option>
+                            <option value="free">Free</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 10px;">
+                    <button type="button" class="secondary-btn" onclick="closeModal('modal-asset-form')">Cancel</button>
+                    <button type="submit" class="submit-btn" style="width: auto; padding: 0.75rem 2rem;">Save Asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="panel-battery" class="side-panel hidden">
+        <h2>Battery Status Log</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: -5px; margin-bottom: 15px;">
+            Assets ordered by lowest battery first. Replace anything under 20%.
+        </p>
+        
+        <div class="filters-container" id="battery-list">
+            </div>
+
+        <div class="modal-footer" style="margin-top: auto; padding-top: 15px;">
+            <button class="done-btn" onclick="closeSidePanel('panel-battery')">Done</button>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='tech.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "Hospital Asset Tracker",
+  "short_name": "Tracker",
+  "description": "Live hospital equipment tracking dashboard.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#1f2937",
+  "icons": [
+    {
+      "src": "/static/app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
